@@ -4,57 +4,81 @@ import {
 	View,
 	Text,
 	StyleSheet,
-	TouchableOpacity
+	TouchableOpacity,
+	TextInput
 } from 'react-native'
+import {connect} from 'react-redux'
+import {bindActionCreators} from 'redux'
+import actions from '../actions'
 
 const dimensions = Dimensions.get('window')
 
 
-export default class BlockNumber extends Component{
+class BlockNumber extends Component{
 	constructor(props){
 		super(props)
-		this.state = {
-			widthboard : 0,
-		}
-	}
-
-	componentDidMount(){
-		this.setState({
-			widthboard: dimensions.width * 0.9,
-		})
 	}
 
 	createBlock(){
 		const blockSum = [0,1,2,3,4,5,6,7,8]
 		let indexCol = 0
-		const data = this.props.data
-
-		console.log(this.props.data)
-		this.props.data ? console.log(this.props.data[0][1]) : console.log("B")
-
-		let row = blockSum.map((index) =>
-			<TouchableOpacity key={index} style={[Style.blockView, index == 2 || index == 5 ? {borderRightColor: '#333'} : null]}>
-				<Text style={Style.number}>{data ? data[indexCol][index] : ''}</Text>
-			</TouchableOpacity>
-		)
+		const {dataJson} = this.props.board
+		const data = dataJson
 
 		let blockRow = blockSum.map((index) =>
 			<View key={index} style={[Style.blockRow, index == 2 || index == 5 ? {borderBottomColor: '#333'} : null]}>
-				{row}
+				{this.callRow(index, blockSum, data)}
 			</View>
 		)
 
-
-
-		// console.log(row);
 		return blockRow
+	}
+
+	callRow(n, blockSum, data){
+		const {pressIndex} = this.props.board
+
+		let row = blockSum.map((index) =>
+			<View style={[
+				{justifyContent: 'center', alignItems: 'center'},
+				data ? data[n][index] > 0 ? Style.grayBg : null : null,
+				data ? n + '' + index == pressIndex ? Style.activeblock : null : null
+			]}>
+				<TouchableOpacity activeOpacity={1}
+					onPress={data ? data[n][index] > 0 ? null  : ()=>this.tapStatus(n,index) : null}
+					key={index} style={[
+						Style.blockView,
+						index == 2 || index == 5 ? {borderRightColor: '#333'} : null
+				]}>
+					<Text style={Style.number}>{data ? data[n][index] > 0 ? data[n][index] : '' : ''}</Text>
+				</TouchableOpacity>
+			</View>
+		)
+
+		return row
+	}
+
+	tapStatus(n, index){
+		const {tapBoard, pressIndex} = this.props.board
+		const {TapBoard, PressIndex} = this.props
+		let i = n + '' + index
+
+		if (i == pressIndex) {
+			TapBoard({data: !tapBoard})
+			PressIndex({data: !tapBoard ? i : null})
+		}
+		else{
+			TapBoard({data: true})
+			PressIndex({data: i})
+		}
 	}
 
 	render(){
 		return(
+			<View>
 				<View style={Style.viewStyle}>
 					{this.createBlock()}
 				</View>
+			</View>
 		)
 	}
 }
@@ -65,7 +89,6 @@ const Style = StyleSheet.create({
 		height: dimensions.width * 0.9 / 9,
 		borderRightWidth: 1,
 		borderColor: '#ccc',
-		backgroundColor: '#eee',
 		boxSizing: 'border-box',
 	},
 	blockRow: {
@@ -84,8 +107,32 @@ const Style = StyleSheet.create({
 		boxSizing: 'border-box'
 	},
 	number: {
-		lineHeight: dimensions.width * 0.9 / 9,
 		textAlign: 'center',
-		fontSize: dimensions.width * 0.9 / 9
+		fontSize: dimensions.width * 0.9 / 10
+	},
+	grayBg: {
+		backgroundColor: "rgba(204,204,204,0.5)"
+	},
+	modal: {
+		position: 'absolute',
+		zIndex: 90,
+		bottom: 0,
+		left:0,
+		width: '100%',
+		height: '30%',
+		backgroundColor: 'rgba(0,0,0,0.4)'
+	},
+	activeblock: {
+		backgroundColor: '#90CB8C',
 	}
 })
+
+function mapDispatchToProps(dispatch){
+  return bindActionCreators(actions, dispatch)
+}
+
+function mapStateToProps({board}){
+  return {board}
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(BlockNumber)

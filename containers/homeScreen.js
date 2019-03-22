@@ -5,14 +5,18 @@ import {
 	ActivityIndicator,
 	StyleSheet
 } from 'react-native'
+import {connect} from 'react-redux'
+import {bindActionCreators} from 'redux'
+import actions from '../actions'
 import BlockNumber from '../components/blockNumber'
+import Numpad from '../components/numpad'
 
-export default class HomeScreen extends Component{
+class HomeScreen extends Component{
 	constructor(props){
 		super(props)
 		this.state = {
-			dataJson: null,
-			isLoading: true
+			isLoading: true,
+			originalBoard: null
 		}
 	}
 
@@ -20,9 +24,12 @@ export default class HomeScreen extends Component{
 		return fetch('https://sugoku.herokuapp.com/board?difficulty=easy')
       .then((response) => {
 				let board = JSON.parse(response._bodyText)
+				const {DataJson} = this.props
+
+				DataJson({dataObject: board["board"]})
 				this.setState({
           isLoading: false,
-          dataSource: board['board'],
+					originalBoard: board
         })
 			})
       .catch((error) =>{
@@ -31,13 +38,13 @@ export default class HomeScreen extends Component{
 	}
 
 	render(){
-		// console.log(this.state.dataSource)
 		return(
-			<View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+			<View style={{position:'relative', flex: 1, justifyContent: 'center', alignItems: 'center'}}>
 				<View style={[Style.loadingModal, this.state.isLoading ? {display: 'flex'} : {display: 'none'}]}>
 					<ActivityIndicator size="large" color="#00ff00" />
 				</View>
-				<BlockNumber data={this.state.dataSource}/>
+				<BlockNumber/>
+				<Numpad/>
 			</View>
 		)
 	}
@@ -55,3 +62,13 @@ const Style = StyleSheet.create({
 		left: 0
 	}
 })
+
+function mapDispatchToProps(dispatch){
+  return bindActionCreators(actions, dispatch)
+}
+
+function mapStateToProps({board}){
+  return {board}
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen)
