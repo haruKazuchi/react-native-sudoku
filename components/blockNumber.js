@@ -12,6 +12,7 @@ import {bindActionCreators} from 'redux'
 import actions from '../actions'
 
 const dimensions = Dimensions.get('window')
+let arr = []
 
 
 class BlockNumber extends Component{
@@ -35,21 +36,21 @@ class BlockNumber extends Component{
 	}
 
 	callRow(n, blockSum, data){
-		const {pressIndex} = this.props.board
+		const {pressIndex, gameStart, masterBoard} = this.props.board
 
 		let row = blockSum.map((index) =>
 			<View style={[
 				{justifyContent: 'center', alignItems: 'center'},
-				data ? data[n][index] > 0 ? Style.grayBg : null : null,
+				data ? masterBoard.filter(i => i === n + '' + index).length > 0 ? Style.grayBg : null : null,
 				data ? n + '' + index == pressIndex ? Style.activeblock : null : null
 			]}>
 				<TouchableOpacity activeOpacity={1}
-					onPress={data ? data[n][index] > 0 ? null  : ()=>this.tapStatus(n,index) : null}
+					onPress={data ? masterBoard.filter(i => i === n + '' + index).length > 0 ? null  : ()=>this.tapStatus(n,index) : null}
 					key={index} style={[
 						Style.blockView,
-						index == 2 || index == 5 ? {borderRightColor: '#333'} : null
+						index == 2 || index == 5 ? {borderRightColor: '#333'} : null,
 				]}>
-					<Text style={Style.number}>{data ? data[n][index] > 0 ? data[n][index] : '' : ''}</Text>
+					<Text style={Style.number}>{data ? data[n][index] > 0 ? data[n][index] : null : null}</Text>
 				</TouchableOpacity>
 			</View>
 		)
@@ -58,9 +59,11 @@ class BlockNumber extends Component{
 	}
 
 	tapStatus(n, index){
-		const {tapBoard, pressIndex} = this.props.board
-		const {TapBoard, PressIndex} = this.props
+		const {tapBoard, pressIndex, dataJson} = this.props.board
+		const {TapBoard, PressIndex, GameStart} = this.props
 		let i = n + '' + index
+
+		GameStart({data: true})
 
 		if (i == pressIndex) {
 			TapBoard({data: !tapBoard})

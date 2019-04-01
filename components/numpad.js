@@ -15,26 +15,30 @@ class Numpad extends Component{
 	}
 
 	numberPress(index){
-		const {tapState, tapNumber} = this.props.board
-		const {TapState, TapNumber} = this.props
+		const {tapNumber, tapBoard, dataJson, pressIndex} = this.props.board
+		const {DataJson} = this.props
+		let copyData = []
 
-		TapState({data: tapNumber === index ? !tapState : true})
-		TapNumber({data: index})
+		copyData = dataJson.map((x) => x)
+
+		if (tapBoard) {
+			copyData[pressIndex.split('')[0]][pressIndex.split('')[1]] = index
+			DataJson({dataObject: copyData})
+		}
 	}
 
 	showNumber(){
-		const num = [9,8,7,6,5,4,3,2,1,0]
+		const num = [7,8,9,4,5,6,1,2,3]
 		const {tapState, tapNumber} = this.props.board
 
 		let numpad = num.map((index)=>
 			<View style={[
 					Style.pad,
-					index === 1 || index == 3 || index === 0 ? {borderBottomWidth: 1} : null,
-					index === 0 || index === 1 || index == 4  || index === 7 ? {borderRightWidth: 1} : null,
-					tapState ? index === tapNumber ? Style.active : null : null
+					index === 1 || index == 3 ? {borderBottomWidth: 1} : null,
+					index === 2 || index == 5  || index === 8 ? {borderLeftWidth: 0, borderRightWidth: 0} : null,
 				]}>
-				<TouchableOpacity activeOpacity={1} style={{width: '100%', height: '100%'}} onPress={()=>this.numberPress(index)}>
-					<Text style={{fontSize: 18, textAlign: 'center', lineHeight: 50}}>{index}</Text>
+				<TouchableOpacity activeOpacity={0.8} style={{width: '100%', height: '100%'}} onPress={()=>this.numberPress(index)}>
+					<Text style={{color: '#fff', fontSize: 18, textAlign: 'center', lineHeight: 50}}>{index}</Text>
 				</TouchableOpacity>
 			</View>
 		)
@@ -67,6 +71,7 @@ const Style = StyleSheet.create({
 		width: '30%',
 		height: 50,
 		borderColor: '#ccc',
+		backgroundColor: '#333',
 		borderTopWidth: 1,
 		borderLeftWidth: 1,
 		boxSizing: 'border-box'
